@@ -69,9 +69,9 @@ public:
 
 	friend ostream& operator<<(ostream &COUT, FITArray &fitArray) {
 
-		for (int i = 0; i < fitArray.GetTrenutno(); i++) {
+		for (int i = 0; i < fitArray.GetTrenutno(); i++) 
 			COUT << fitArray.GetNiz()[i] << " ";
-		}
+		
 		return COUT;
 	}
 
@@ -89,9 +89,9 @@ public:
 
 		if (OD > _trenutno)
 			return -1;
-		if (DO > _trenutno) {  //od 2 do 7 a imaju 4 elementa [0,1,2,3]
+		if (DO > _trenutno)   //od 2 do 7 a imaju 4 elementa [0,1,2,3]
 			DO = _trenutno;
-		}
+		
 
 		for (int i = OD; i < DO; i++)
 			cout << _niz[i] << " ";
@@ -169,9 +169,9 @@ public:
 
 	float GetProsjek() {
 		float suma = 0;
-		for (int i = 0; i < _polozeniPredmeti.GetTrenutno(); i++) {
+		for (int i = 0; i < _polozeniPredmeti.GetTrenutno(); i++) 
 			suma += _polozeniPredmeti.GetNiz()[i].GetOcjena();
-		}
+		
 		suma /= _polozeniPredmeti.GetTrenutno();
 		return suma;
 	}
