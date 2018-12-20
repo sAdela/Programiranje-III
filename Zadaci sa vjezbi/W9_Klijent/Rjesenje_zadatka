@@ -1,0 +1,470 @@
+#include<iostream>
+using namespace std;
+
+const char* crt = "\n--------------------------------------------------------\n";
+template<class T1, class T2>
+class Kolekcija
+{
+	T1* _elementi1;
+	T2* _elementi2;
+	int _trenutno;
+public:
+	Kolekcija()
+	{
+		_trenutno = 0;
+		_elementi1 = nullptr;
+		_elementi2 = nullptr;
+	}
+	T1 getElement1(int& lokacija) const {
+		return _elementi1[lokacija];
+	}
+	T2& getElement2(int& lokacija) const {
+		return _elementi2[lokacija];
+	}
+
+	~Kolekcija()
+	{
+		delete[] _elementi1;
+		_elementi1 = nullptr;
+
+		delete[] _elementi2;
+		_elementi2 = nullptr;
+	}
+
+	void DodajElemente(const T1& el1, const T2& el2)
+	{
+		T1* temp1 = new T1[_trenutno + 1];
+		T2* temp2 = new T2[_trenutno + 1];
+
+		for (int i = 0; i < _trenutno; i++)
+		{
+			temp1[i] = _elementi1[i];
+			temp2[i] = _elementi2[i];
+		}
+
+		delete[] _elementi1;
+		delete[] _elementi2;
+
+		_elementi1 = temp1;
+		_elementi2 = temp2;
+
+		_elementi1[_trenutno] = el1;
+		_elementi2[_trenutno] = el2;
+		_trenutno++;
+	}
+
+	int GetTrenutno() const { return _trenutno; }
+
+	friend ostream& operator<< <>(ostream&, const Kolekcija&);
+};
+
+template<class T1, class T2>
+ostream& operator<<(ostream& cout, const Kolekcija<T1, T2>& kol)
+{
+	for (size_t i = 0; i < kol._trenutno; i++)
+	{
+		cout << kol._elementi1[i] << "\t" << kol._elementi2[i] << endl;
+	}
+
+	return cout;
+}
+
+char * AlocirajNizKaraktera(const char * sadrzaj) {
+	if (sadrzaj == nullptr)
+		return nullptr;
+	int vel = strlen(sadrzaj) + 1;
+	char * temp = new char[vel];
+	strcpy_s(temp, vel, sadrzaj);
+	return temp;
+}
+
+//U programu implementirati nasljeđivanje između odgovarajućih klasa
+//Klasu Osoba deklarisati kao apstraktnu.
+class Osoba
+{
+protected:
+	char* _ime;
+	char* _prezime;
+	char* _adresa;
+	char _telefon[15];
+public:
+
+	Osoba(const char* ime, const char* prezime, const char* adresa, const char* telefon)
+	{
+		_ime = AlocirajNizKaraktera(ime);
+		_prezime = AlocirajNizKaraktera(prezime);
+		_adresa = AlocirajNizKaraktera(adresa);
+		strncpy_s(_telefon, telefon, _TRUNCATE);
+	}
+
+	char* getIme() const{
+		return _ime;
+	}
+	char* getPrezime() const {
+		return _prezime;
+	}
+
+	Osoba(const Osoba& o)
+	{
+		_ime = AlocirajNizKaraktera(o._ime);
+		_prezime = AlocirajNizKaraktera(o._prezime);
+		_adresa = AlocirajNizKaraktera(o._adresa);
+		strncpy_s(_telefon, o._telefon, _TRUNCATE);
+	}
+
+	~Osoba()
+	{
+		delete[] _ime;
+		_ime = nullptr;
+		delete[] _prezime;
+		_prezime = nullptr;
+		delete[] _adresa;
+		_adresa = nullptr;
+	}
+
+	virtual void Info() = 0
+	{
+		cout << "Ime i prezime: " << _ime << " " << _prezime << endl;
+		cout << "Adresa: " << _adresa << endl;
+		cout << "Telefon: " << _telefon << endl;
+	}
+};
+
+class Proizvod
+{
+	char* _naziv;
+	char* _opis;
+	double _cijena;
+public:
+	double& getCijena() {
+		return _cijena;
+	}
+	Proizvod(const char* naziv, const char* opis, double cijena)
+	{
+		_naziv = AlocirajNizKaraktera(naziv);
+		_opis = AlocirajNizKaraktera(opis);
+		_cijena = cijena;
+	}
+	Proizvod(const Proizvod& proizvod) {
+		_naziv = AlocirajNizKaraktera(proizvod._naziv);
+		_opis = AlocirajNizKaraktera(proizvod._opis);
+		_cijena = proizvod._cijena;
+	}
+	~Proizvod()
+	{
+		delete[] _naziv;
+		_naziv = nullptr;
+
+		delete[] _opis;
+		_opis = nullptr;
+	}
+
+	friend ostream& operator<<(ostream&, const Proizvod&);
+
+	friend ostream& operator<<(ostream& cout, const Proizvod* p)
+	{
+		cout << "Naziv: " << p->_naziv << endl;
+		cout << "Opis: " << p->_opis << endl;
+		cout << "Cijena: " << p->_cijena << endl;
+
+		return cout;
+	}
+
+};
+
+ostream& operator<<(ostream& cout, const Proizvod& p)
+{
+	cout << "Naziv: " << p._naziv << endl;
+	cout << "Opis: " << p._opis << endl;
+	cout << "Cijena: " << p._cijena << endl;
+
+	return cout;
+}
+
+class Narudzba {
+protected:
+	char _datum[12]; //Format: dd.MM.yyyy.
+	Kolekcija<Proizvod*, int> _proizvodi; //Podaci o naručenim proizvodima i količinama
+public:
+	int GetMjesecNarudzbe() {
+		char novi[3];
+		novi[0] = _datum[3];
+		novi[1] = _datum[4];
+		novi[2] = '\0';
+		int mjesec = atoi(novi);
+		return mjesec;
+	}
+	Narudzba(const char* datum = "01.01.1970") {
+		strncpy_s(_datum, datum, _TRUNCATE);
+	}
+	Narudzba(const Narudzba& narudzba) {
+		strncpy_s(_datum, narudzba._datum, _TRUNCATE);
+		for (int i = 0; i < _proizvodi.GetTrenutno(); i++) {
+			_proizvodi.DodajElemente(narudzba._proizvodi.getElement1(i), narudzba._proizvodi.getElement2(i)); //referenca kod getElement je li u redu?
+		}
+	}
+	void NapraviNarudzbu(const Proizvod* proizvod, const int& velicina) {
+		_proizvodi.DodajElemente(const_cast<Proizvod*>(proizvod), velicina);
+
+	}
+	//Funkciju GetIznosNarudzbe koja vraća ukupan iznos narudžbe na osnovu
+	//podataka o cijenama proizvoda i naručenim količinama. Funkcija prima neobavezni parametar popust
+	//koji inicijalno ima vrijednost 0, što znači da ne postoji popust na postojeće cijene proizvoda.
+	double GetIznosNarudzbe(int popust = 0) {
+		double suma = 0;
+		for (int i = 0; i < _proizvodi.GetTrenutno(); i++) {
+			suma += _proizvodi.getElement1(i)->getCijena() * _proizvodi.getElement2(i);
+		}
+		suma -= (popust / 100);
+		return suma;
+	}
+	//Funkciju za ispis svih vrijednosti atributa klase.
+	friend ostream& operator<<(ostream& COUT, const Narudzba& narudzba) {
+		COUT << "Datum narudzbe: " << narudzba._datum << endl;
+		COUT << narudzba._proizvodi << endl;
+		return COUT;
+	}
+
+	void Info() {
+		cout << "Datum narudzbe: " << _datum << endl;
+		cout << _proizvodi << endl;
+	}
+};
+
+class Klijent : public Osoba
+{
+protected:
+	int _id;
+	char* _email;
+	Kolekcija<Narudzba, double> _narudzbe; //Podaci o narudžbama sa ukupnim utrošenim iznosom u KM
+public:
+	//Potrebne konstruktor i destruktor funkcije.
+	Klijent(const int& id, const char* email, const char* ime, const char* prezime, const char* adresa, const char* telefon)
+		: Osoba(ime, prezime, adresa, telefon), _id(id) {
+		_email = AlocirajNizKaraktera(email);
+	}
+	Klijent(const Klijent& klijent) :Osoba(klijent) {
+		_id = klijent._id;
+		_email = AlocirajNizKaraktera(klijent._email);
+		for (int i = 0; i < _narudzbe.GetTrenutno(); i++) {
+			_narudzbe.DodajElemente(klijent._narudzbe.getElement1(i), klijent._narudzbe.getElement2(i));
+		}
+	}
+	~Klijent() {
+		delete[]_email; _email = nullptr;
+	}
+	//Funkciju za evidenciju nove narudžbe.
+	void KlijentNaruciNarudzbu(const Narudzba& narudzba, double iznos) {
+		_narudzbe.DodajElemente(narudzba, iznos);
+	}
+	//Funkciju koja vraća logičku vrijednost true ukoliko je klijent za odabrani mjesec u godini imao
+	//potrošnju veću od zadate. Prototip funkcije: bool IsPotrosnjaVeca(int mjesec, double potrosnja);
+	//Za pronalazak potrosnje po mjesecima koristiti podatak o datumu narudžbe. 
+	bool IsPotrosnjaVeca(int mjesec, double potrosnja) {
+		double potroseno = 0;
+		if (mjesec < 1 || mjesec > 12)
+			return false;
+		for (int i = 0; i < _narudzbe.GetTrenutno(); i++) {
+			if (_narudzbe.getElement1(i).GetMjesecNarudzbe() == mjesec)
+				potroseno += _narudzbe.getElement2(i);
+		}
+		return potroseno > potrosnja;
+	}
+
+	//Funkciju za izmjenu e-mail adrese.
+	void setEmail(const char* email = nullptr) {
+		char temp[50] = "\0";
+		if (email == nullptr) {
+			strcpy_s(temp, Osoba::_ime);
+			strcat_s(temp, ".");
+			strcat_s(temp, Osoba::_prezime);
+			strcat_s(temp, "@fit.ba");
+			_email = AlocirajNizKaraktera(temp);
+		}
+		
+
+		else {
+			delete[] _email;
+			_email = AlocirajNizKaraktera(email);
+		}
+	}
+	//Funkciju za ispis svih vrijednosti atributa klase.
+	void Info() {
+		cout << "ID: " << _id << endl;
+		if (_email != nullptr)
+			cout << _email << endl;
+		cout << _narudzbe << endl;
+	}
+};
+class VIPKlijent : public Klijent
+{
+	char* _parkingOznaka;
+	double _popust;
+public:
+	//Potrebne konstruktor i destruktor funkcije
+	VIPKlijent(const char* parkingOznaka, double popust, const int& id, const char* email, const char* ime,
+		const char* prezime, const char* adresa, const char* telefon) : Klijent(id, email, ime, prezime, adresa, telefon) {
+		_parkingOznaka = AlocirajNizKaraktera(parkingOznaka);
+		_popust = popust;
+	}
+	VIPKlijent(const VIPKlijent& klijent) :Klijent(klijent) {
+		_parkingOznaka = AlocirajNizKaraktera(klijent._parkingOznaka);
+		_popust = klijent._popust;
+	}
+	~VIPKlijent() {
+		delete[]_parkingOznaka; _parkingOznaka = nullptr;
+	}
+	//Funkciju za evidenciju nove narudžbe sa zaračunatim popustom na sve proizvode.
+	void EvidentirajNovuNarudzbuSaPopustom(const Narudzba& narudzba, double iznos) {
+		Klijent::KlijentNaruciNarudzbu(narudzba, iznos - iznos * (_popust / 100));
+	}
+	//Funkciju koja posljednjoj narudžbi klijenta dodaje gratis proizvod proslijeđen kao parametar.
+	void DodajGratisProizvod(const Proizvod* proizvod) {
+		int i = _narudzbe.GetTrenutno() - 1;
+		_narudzbe.getElement1(i).NapraviNarudzbu(const_cast<Proizvod*>(proizvod), 1);
+	}
+	//Funkciju za ispis svih vrijednosti atributa klase
+	void Info() {
+		Klijent::Info();
+		cout << "Parking oznaka: " << _parkingOznaka << endl;
+		cout << "Popust: " << _popust << "%" << endl;
+	}
+};
+
+//Funkcija treba da pronađe sve one klijente koji su za odabrani mjesec ostvarili potrošnju veću
+//od zadate. Ispisati njihove podatke i vratiti ukupan broj pronađenih klijenata.
+int PronadjiKlijentePoPotrosnji(Osoba* niz[], int max) {
+	int mjesec, brojac = 0;
+	double potrosio;
+	cout << "Odaberite mjesec po kojem zelite posmatrati potrosnju: ";
+	cin >> mjesec;
+	cout << "Odaberite u odnosu na koju potrosnju cete posmatrati klijente: ";
+	cin >> potrosio;
+	for (int i = 0; i < max; i++) {
+		Klijent* temp = dynamic_cast<Klijent*>(niz[i]);
+		if (temp != nullptr) {
+			if (potrosio > temp->IsPotrosnjaVeca(mjesec, potrosio)) {
+				temp->Info();
+				brojac++;
+			}
+		}
+	}
+	return brojac;
+}
+
+//Pronaći sve VIP klijente, te im dodati gratis proizvod proslijeđen kao parametar.
+void UkljuciGratisProizvodVIPKlijentima(Osoba* niz[], int max, const Proizvod& p) {
+	for (int i = 0; i < max; i++) {
+		VIPKlijent* temp = dynamic_cast<VIPKlijent*>(niz[i]);
+		if (temp != nullptr) {
+			temp->DodajGratisProizvod(&p);
+		}
+	}
+}
+
+//Svim klijentima postaviti mail adresu u formatu: ime.prezime@fit.ba.
+void GenerisiMailAdreseKlijentima(Osoba* niz[], int max) {
+	Klijent* temp;
+	for (int i = 0; i < max; i++) {
+		temp = dynamic_cast<Klijent*>(niz[i]);
+		if (temp != nullptr) {
+			temp->setEmail();
+		}
+	}
+}
+
+//Omogućiti pretragu klijenata po imenu ili prezimenu (ispisati informacije
+//o svim klijentima koji sadrže uneseni tekst u dijelu imena ili prezimena).
+void PronadjiKlijentePoImenuPrezimenu(Osoba* niz[], int max) {
+	Klijent* temp;
+	char imePr[20];
+	cout << "Unesite ime ili prezime za pretragu: ";
+	cin.getline(imePr, 20);
+
+	for (int i = 0; i < max; i++) {
+		temp = dynamic_cast<Klijent*>(niz[i]);
+		if (temp != nullptr) {
+			if (strstr(temp->getIme(), imePr) != nullptr || strstr(temp->getPrezime(), imePr) != nullptr)
+				temp->Info();
+		}
+	}
+}
+
+int main()
+{
+	//Testirati sve dostupne funkcionalnosti uz obaveznu provjeru globalnih funkcija.
+	//VIP klijentima sve narudžbe kreirati uz zaračunati popust
+	Osoba* klijenti[5] = { nullptr };
+
+
+	klijenti[0] = new Klijent(1, "mail", "Larisa", "Dedovic", "Mostar", "123");
+	klijenti[1] = new Klijent(2, "mail1", "Denis", "Music", "Mostar", "5555");
+
+	//	((Klijent*)(klijenti[0]))->SetMail("larisa@fit.ba"); OVAKO NE
+
+	Klijent* pok = dynamic_cast<Klijent*>(klijenti[0]);
+	if (pok != nullptr)
+		pok->setEmail("larisa@fit.ba");
+
+	klijenti[0]->Info();
+
+
+	for (size_t i = 0; i < 5; i++)
+	{
+		delete klijenti[i];
+	}
+
+
+	Klijent klijentNoNConst(3, "mail2", "Adel", "Handzic", "Mostar", "3333");
+	//Info(const_cast<Klijent&>(klijentConst));
+	/*NovaPametnaMetoda(klijentNoNConst);
+	*/
+	Narudzba narudzba("6.12.2018");
+	Proizvod p1("Teletina", "iz krusene peci", 5.5);
+	Proizvod p2("Fileti", "sa pomfritom", 4.5);
+	Proizvod p3("Cizburger", "sa pomfritom", 2.99);
+
+	narudzba.NapraviNarudzbu(&p1, 5);
+	narudzba.NapraviNarudzbu(&p2, 5);
+	narudzba.NapraviNarudzbu(&p3, 5);
+
+	Narudzba narudzba2(narudzba);
+	Klijent klijent(170207, "mail3", "Jasmin", "Azemovic", "Mostar", "+387606060600");
+	klijent.KlijentNaruciNarudzbu(narudzba2, narudzba.GetIznosNarudzbe());
+
+	VIPKlijent VipKlijent("IP196.126.3.2", 50.0, 4321, "mail4", "Test", "Novi", "Negdje u memoriji", "01010101001");
+	VipKlijent.EvidentirajNovuNarudzbuSaPopustom(narudzba2, narudzba2.GetIznosNarudzbe());
+	VipKlijent.Info();
+	Proizvod p11("Teletina", "iz krusene peci", 5.5);
+	Proizvod p22("Fileti", "sa pomfritom", 4.5);
+	Proizvod p33("Cizburger", "sa pomfritom", 2.99);
+	Narudzba narudzba4("06.12.2018");
+	narudzba.NapraviNarudzbu(&p11, 5);
+	narudzba.NapraviNarudzbu(&p22, 5);
+
+	const int max = 2;
+	Osoba* niz[max];
+
+	niz[0] = new Klijent(170207, "mail", "Jasmin", "Jasmin", "Mostar", "+387606060600");
+	niz[1] = new VIPKlijent("PARKING", 50, 170208, "email", "Zanin", "Vejzovic", "Mostar", "+387616161611");
+
+	((Klijent*)(niz[0]))->KlijentNaruciNarudzbu(narudzba, narudzba.GetIznosNarudzbe());
+	((VIPKlijent*)(niz[1]))->KlijentNaruciNarudzbu(narudzba, narudzba.GetIznosNarudzbe());
+
+
+	cout << "\n===========================================\n" << endl;
+	((Klijent*)(niz[0]))->Info();
+	cout << "\n===========================================\n";
+	((VIPKlijent*)(niz[1]))->Info();
+	cout << "\n===========================================\n";
+	UkljuciGratisProizvodVIPKlijentima(niz, max, p3);
+	GenerisiMailAdreseKlijentima(niz, max);
+
+	cout << "Broj pronadjenih osoba je: " << PronadjiKlijentePoPotrosnji(niz, max) << crt;
+
+	cin.ignore();
+	PronadjiKlijentePoImenuPrezimenu(niz, max);
+	
+	system("pause");
+	return 0;
+}
