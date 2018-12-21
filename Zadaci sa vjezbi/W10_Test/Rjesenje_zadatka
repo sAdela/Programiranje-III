@@ -522,7 +522,6 @@ public:
 		for (int i = 0; i < 30; i++) {
 			if (_pitanja[i] == nullptr) {
 				_pitanja[i] = pitanje;
-				//		_maksimalnoBodova += pitanje->getBodovi();
 				return true;
 			}
 		}
@@ -563,7 +562,6 @@ public:
 int main()
 {
 	//Testirati sve implementirane funkcionalnosti programa. 
-	//Kreirati najmanje jedan test sa 10 pitanja.
 	Pitanje* esejsko = new EsejskoPitanje("Service Level Agreement", 1, "Sta oznacava skracenica SLA?", "SMA", 3, "Service Level Agreement");
 	EsejskoPitanje* temp = dynamic_cast<EsejskoPitanje*>(esejsko);
 	if (temp != nullptr) {
