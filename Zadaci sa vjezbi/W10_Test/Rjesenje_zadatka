@@ -1,0 +1,636 @@
+#include<iostream>
+using namespace std;
+
+template<class T1, class T2>
+class List {
+	T1* _elementi1;
+	T2* _elementi2;
+	const int _max;
+	int _trenutno;
+public:
+	int getMax()const {
+		return _max;
+	}
+	List(int max) : _max(max)
+	{
+		_elementi1 = nullptr;
+		_elementi2 = nullptr;
+		_trenutno = 0;
+	}
+
+	List(const List& list) : _max(list._max)
+	{
+		_elementi1 = new T1[list._trenutno];
+		_elementi2 = new T2[list._trenutno];
+
+		for (int i = 0; i < list._trenutno; i++)
+		{
+			_elementi1[i] = list._elementi1[i];
+			_elementi2[i] = list._elementi2[i];
+		}
+
+		_trenutno = list._trenutno;
+
+	}
+	~List()
+	{
+		delete[] _elementi1;
+		_elementi1 = nullptr;
+
+		delete[] _elementi2;
+		_elementi2 = nullptr;
+	}
+
+	bool Add(const T1& el1, T2& el2)
+	{
+		if (_trenutno == _max)
+			return false;
+
+		for (int i = 0; i < _trenutno; i++)
+		{
+			if (_elementi1[i] == el1 && _elementi2[i] == el2)
+				return false;
+		}
+
+		T1* temp1 = new T1[_trenutno + 1];
+		T2* temp2 = new T2[_trenutno + 1];
+
+
+		for (int i = 0; i < _trenutno; i++)
+		{
+			temp1[i] = _elementi1[i];
+			temp2[i] = _elementi2[i];
+		}
+
+		delete[] _elementi1;
+		delete[] _elementi2;
+
+		_elementi1 = temp1;
+		_elementi2 = temp2;
+
+		_elementi1[_trenutno] = el1;
+		_elementi2[_trenutno] = el2;
+		_trenutno++;
+	}
+
+	bool Remove(int index)
+	{
+		if (index < 0 || index > _trenutno)
+			return false;
+
+		T1* temp1 = new T1[_trenutno - 1];
+		T2* temp2 = new T2[_trenutno - 1];
+
+		int j = 0;
+		for (int i = 0; i < _trenutno; i++)
+		{
+			if (i != index)
+			{
+				temp1[j] = _elementi1[i];
+				temp2[j] = _elementi2[i];
+				j++;
+			}
+		}
+
+		delete[] _elementi1;
+		delete[] _elementi2;
+
+		_elementi1 = temp1;
+		_elementi2 = temp2;
+
+		_trenutno--;
+
+		return true;
+	}
+
+	T1& GetElement1(int index)
+	{
+		if (index >= 0 && index < _trenutno)
+			return _elementi1[index];
+	}
+
+	T2& GetElement2(int index)
+	{
+		if (index >= 0 && index < _trenutno)
+			return _elementi2[index];
+		throw exception("Ne postoji taj element");
+
+	}
+
+	int GetTrenutno()const { return _trenutno; }
+
+	friend ostream& operator<< <>(ostream&, const List&);
+};
+
+template<class T1, class T2>
+ostream& operator<<(ostream& cout, const List<T1, T2>& list) {
+	for (int i = 0; i < list._trenutno; i++)
+		cout << list._elementi1[i] << list._elementi2[i] << endl;
+	return cout;
+}
+
+char * AlocirajNizKaraktera(const char * sadrzaj) {
+	if (sadrzaj == nullptr)
+		return nullptr;
+	int vel = strlen(sadrzaj) + 1;
+	char * temp = new char[vel];
+	strcpy_s(temp, vel, sadrzaj);
+	return temp;
+}
+
+class Pitanje
+{
+protected:
+	int _id;
+	char* _oblast;
+	char* _tekst;
+	double _bodovi;
+public:
+	double getBodovi() { return _bodovi; }
+	virtual void OdgovoriPitanja() = 0 { cout << _tekst << endl; }
+	virtual double brojBodovaStudenta() = 0;
+	Pitanje(int id, const char* tekst, const char* oblast, double bodovi) :
+		_id(id), _bodovi(bodovi)
+	{
+		_tekst = AlocirajNizKaraktera(tekst);
+		_oblast = AlocirajNizKaraktera(oblast);
+	}
+	virtual void setBodovi(double bodovi) {
+		_bodovi = bodovi;
+	}
+	virtual void IzmjeniPodatkeOPitanju(const char* oblast, const char* tekst, double bodovi) {
+		if (_oblast != nullptr)
+			delete[] _oblast;
+		if (_tekst != nullptr)
+			delete[]_tekst;
+		_oblast = AlocirajNizKaraktera(oblast);
+		_tekst = AlocirajNizKaraktera(tekst);
+		_bodovi = bodovi;
+	}
+
+	virtual ~Pitanje() = 0
+	{
+		delete[] _tekst;
+		_tekst = nullptr;
+
+		delete[] _oblast;
+		_oblast = nullptr;
+	}
+
+	virtual void Info()
+	{
+		cout << "Pitanje: " << _tekst << endl;
+		cout << "Broj bodova: " << _bodovi << endl;
+
+	}
+};
+
+//Pitanje na kojem studenti upisuju odgovore.
+//Pohranjuje se tačan odgovor od strane edukatora.
+class EsejskoPitanje : virtual public Pitanje {
+protected:
+	char* _tacanOdgovor;
+	char* _odgovorStudenta;
+public:
+	//Konstruktor i destruktor
+	EsejskoPitanje(const char* tacanOdgovor, int id, const char* tekst, const char* oblast, double bodovi,
+		const char* odgovorStudenta = nullptr) :
+		Pitanje(id, tekst, oblast, bodovi) {
+		_tacanOdgovor = AlocirajNizKaraktera(tacanOdgovor);
+		_odgovorStudenta = AlocirajNizKaraktera(odgovorStudenta);
+	}
+	virtual double brojBodovaStudenta() {
+		if (strcmp(_tacanOdgovor, _odgovorStudenta) == 0)
+			return _bodovi;
+
+		return 0;
+	}
+	virtual void OdgovoriPitanja() {
+		char temp[200];
+		cout << _tekst << endl;
+		cout << "Unesite odgovor: ";
+		cin.getline(temp, 200);
+		setOdgovorStudenta(temp);
+	}
+	//Funkciju za izmjenu svih atributa klase
+	void setTacanOdgovor(const char* noviOdgovor) {
+		if (_tacanOdgovor != nullptr)
+			delete[] _tacanOdgovor;
+		_tacanOdgovor = AlocirajNizKaraktera(noviOdgovor);
+	}
+	void setOdgovorStudenta(const char* odgovorStudenta) {
+		if (_odgovorStudenta != nullptr)
+			delete[] _odgovorStudenta;
+		_odgovorStudenta = AlocirajNizKaraktera(odgovorStudenta);
+	}
+
+};
+
+//Pitanje koje može imati više tačnih odgovora. Student bira ponudjene opcije. 
+class MCMAPitanje : virtual public Pitanje
+{
+protected:
+	List<char*, bool> _odgovori; //ponudjeni odgovori sa oznakama tacnih odgovora
+	int* _oznaceniOdgovoriStudenta; //cuvaju se redni brojevi (npr. 1 - 3 - 5) ponudjenih odgovora koje je odabrao student
+	int _brojac;
+	bool _validnoPitanje;
+public:
+	//Konstruktor i destruktor
+	MCMAPitanje(int id, const char* tekst, const char* oblast, int maxOdgovora, double bodovi) :
+		Pitanje(id, tekst, oblast, bodovi), _odgovori(maxOdgovora) {
+		_oznaceniOdgovoriStudenta = nullptr; _brojac = 0; _validnoPitanje = false;
+	}
+	~MCMAPitanje() {
+		delete[]_oznaceniOdgovoriStudenta; _oznaceniOdgovoriStudenta = nullptr;
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			delete[] _odgovori.GetElement1(i);
+		}
+	}
+
+
+	//Funkciju za izmjenu podataka o pitanju - implementirano u klasi Pitanje
+
+	//Broj bodova inicijalno postaviti na 0 i uvecavati svakim oznacenim tacnim odgovorom.
+	//Funkciju za dodavanje odgovora u listu koja treba da osigura da su najmanje 2 (od max) odgovora oznacena kao tacna.
+	//Dok se ne dodaju svi predvidjeni odgovori pitanje ne treba biti upotrebljivo ukoliko prethodni uslov
+	//nije ispunjen (ne prikazivati pitanja na ispisu).
+	//Napomena: Podatke o odgovorima cuvati u zasebnoj memoriji i istu dealocirati unutar same klase
+	bool DodajPonudenOdgovor(const char* odgovor, bool tacan) {
+
+		int brojac = 0;
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			if (strcmp(_odgovori.GetElement1(i), odgovor) == 0)
+				return false;
+		}
+
+		_odgovori.Add(AlocirajNizKaraktera(odgovor), tacan);
+
+		if (tacan)
+			brojac++;
+
+		if (!_validnoPitanje) {
+			for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+				if (_odgovori.GetElement2(i))
+					brojac++;
+			}
+			if (brojac > 1)
+				_validnoPitanje = true;
+		}
+		return true;
+	}
+
+	virtual void OdgovoriPitanja() {
+		Pitanje::Info();
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++)
+			cout << i << ". " << _odgovori.GetElement1(i) << endl;
+
+		int vel = _odgovori.GetTrenutno();
+		int brojOdg;
+		cout << "Koliko odgovora birate? ";
+		cin >> brojOdg;
+		if (brojOdg > _odgovori.GetTrenutno()) return;
+		_brojac = brojOdg;
+		_oznaceniOdgovoriStudenta = new int[brojOdg];
+		for (int i = 0; i < brojOdg; i++)
+			cin >> _oznaceniOdgovoriStudenta[i];
+		cin.ignore();
+
+	}
+
+	/*void DodajOdgovorStudenta(int odgovor) {
+
+	if (_brojac >= _odgovori.getMax())
+	return;
+
+	int *temp = new int[_brojac + 1];
+	for (int i = 0; i < _brojac; i++) {
+	temp[i] = _oznaceniOdgovoriStudenta[i];
+	}
+	delete[] _oznaceniOdgovoriStudenta;
+	temp[_brojac++] = odgovor;
+	_oznaceniOdgovoriStudenta = temp;
+	}*/
+	bool DaLiJeOdgovorTacan(int index) {
+		if (_odgovori.GetElement2(index) == true)
+			return true;
+		return false;
+	}
+	virtual double brojBodovaStudenta() {
+		int brojacTacnih = 0;
+		int brojacTacnihStudenta = 0;
+		int brojacNetacnihStudenta = 0;
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			if (_odgovori.GetElement2(i))
+				brojacTacnih++;
+		}
+		for (int i = 0; i < _brojac; i++) {
+			try {
+				if (_odgovori.GetElement2(_oznaceniOdgovoriStudenta[i]))
+					brojacTacnihStudenta++;
+				else if (!_odgovori.GetElement2(_oznaceniOdgovoriStudenta[i]))
+					brojacNetacnihStudenta++;
+			}
+			catch (exception& err) {
+				cout << "Izabrani odgovor out of range" << endl;
+			}
+		}
+		if (brojacNetacnihStudenta > 0)
+			return 0;
+		return _bodovi* (double(brojacTacnihStudenta) / brojacTacnih);
+	}
+
+
+	////Funkciju za uklanjanje odgovora na osnovu rednog broja u listi. 
+	////Ukoliko se uklanja odgovor koji je oznacen kao tacan i 
+	////pri tome u listi ostaje samo još jedan odgovor oznacen kao tacan,
+	////pitanje postaje neupotrebljivo dok se ne doda jos jedan
+	////tacan odgovor.
+	virtual void UkloniOdgovor(int redniBroj) {
+		int brojac = 0;
+		if (redniBroj < 0 && redniBroj > _odgovori.GetTrenutno())
+			return;
+
+		if (_odgovori.GetElement2(redniBroj)) {
+			for (int i = 0; i < _odgovori.GetTrenutno(); i++)
+				if (_odgovori.GetElement2(i))
+					brojac++;
+		}
+		if (_odgovori.GetElement2(redniBroj) && brojac <= 2)
+			_validnoPitanje = false;
+
+		_odgovori.Remove(redniBroj);
+	}
+
+	////Funkciju za promjenu odgovora na odredjenom rednom broju
+	void PromjeniOdgovor(const char* tekstOdgovora, int redniBroj, bool tacno) {
+		if (redniBroj < 0 && redniBroj > _odgovori.GetTrenutno())
+			return;
+
+		delete[]_odgovori.GetElement1(redniBroj);
+		_odgovori.GetElement1(redniBroj) = AlocirajNizKaraktera(tekstOdgovora);
+		_odgovori.GetElement2(redniBroj) = tacno;
+	}
+	virtual void Info() override
+	{
+		if (_validnoPitanje) {
+			Pitanje::Info();
+			cout << _odgovori << endl;
+			cout << "Broj bodova: " << _bodovi << endl;
+		}
+	}
+
+
+};
+
+//Pitanje koje može imati jedan tačan odgovor. Student bira jednu od ponudjenih opcija.
+class MCSAPitanje : public MCMAPitanje
+{
+public:
+	//Konstruktor
+	MCSAPitanje(int id, const char* tekst, const char* oblast, double bodovi, int maxOdgovora) :
+		MCMAPitanje(id, tekst, oblast, maxOdgovora, bodovi), Pitanje(id, tekst, oblast, bodovi) {
+	}
+	~MCSAPitanje() {
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			delete[] _odgovori.GetElement1(i);
+		}
+	}
+
+	virtual void OdgovoriPitanja() {
+		Pitanje::Info();
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++)
+			cout << i << ". " << _odgovori.GetElement1(i) << endl;
+		cout << "Odaberite jedan ponudeni odgovor\n";
+		//		if (_oznaceniOdgovoriStudenta == nullptr)
+		_oznaceniOdgovoriStudenta = new int;
+		do {
+			cout << "Unesite odgovarajuci odgovor: ";
+			cin >> *_oznaceniOdgovoriStudenta;
+		} while (*_oznaceniOdgovoriStudenta < 0 || *_oznaceniOdgovoriStudenta > _odgovori.GetTrenutno());
+		cin.ignore();
+	}
+
+	virtual double brojBodovaStudenta() {
+		
+		if (_odgovori.GetElement2(*_oznaceniOdgovoriStudenta))
+			return _bodovi;
+		
+		return 0;
+	}
+
+	//Broj bodova se postavlja na vrijednost proslijedjenog parametra.
+	void setBrojBodova(double brojBodova) {
+		_bodovi = brojBodova;
+	}
+	//Preklopljene verzije funkcija za dodavanje i uklanjanje odgovora koje dozvoljavaju da samo
+	//jedan odgovor bude oznacen kao tacan.
+	//Svi prethodno navedeni uslovi trebaju biti ispunjeni,
+	//ali u ovom slučaju sa iskljucivo jednim tacnim odgovorom.
+	bool DodajPonudenOdgovor(const char* odgovor, bool tacan) {
+		int brojac = 0;
+
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			if (strcmp(_odgovori.GetElement1(i), odgovor) == 0)
+				return false;
+		}
+
+		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
+			if (_odgovori.GetElement2(i))
+				brojac++;
+		}
+		if (brojac == 1 && tacan)
+			return false;
+
+		if (tacan) 
+			_validnoPitanje = true;
+			
+		_odgovori.Add(AlocirajNizKaraktera(odgovor), tacan);
+		return true;
+	}
+
+	void UkloniOdgovor(int redniBroj) {
+		if (redniBroj < 0 && redniBroj > _odgovori.GetTrenutno())
+			return;
+
+		if (_odgovori.GetElement2(redniBroj))
+			_validnoPitanje = false;
+		_odgovori.Remove(redniBroj);
+	}
+
+	void Info() override
+	{
+		if (_validnoPitanje)
+			MCMAPitanje::Info();
+	}
+};
+
+//Pojam je tip pitanja kod kojeg se definiše pojam zadat tekstom pitanja. Definicija/Opis pojma se tretira kao
+//esejski dio pitanja, dok se karakteristike tog pojma postavljaju kroz MCMA tip pitanja.
+class Pojam : public EsejskoPitanje, public MCMAPitanje
+{
+	bool _slozen; //pojam moze biti prost ili slozen
+public:
+	//Konstruktor
+	Pojam(bool slozen, const char* tacanOdgovor, int maxOdgovora, int id, const char* tekst, const char* oblast, double bodovi,
+		const char* odgovorStudenta = nullptr) : EsejskoPitanje(tacanOdgovor, id, tekst, oblast, bodovi),
+		MCMAPitanje(id, tekst, oblast, maxOdgovora, bodovi), Pitanje(id, tekst, oblast, bodovi), _slozen(slozen) {
+		//Jednostavno pitanje tipa Pojam nosi minimalno 3 boda,
+		//a ukoliko je rijec o slozenom pojmu minimalno 5 bodova.
+		if (_slozen)
+			_bodovi = 5;
+		else _bodovi = 3;
+	}
+
+	virtual void OdgovoriPitanja() {
+		//MCMAPitanje::OdgovoriPitanja();
+		EsejskoPitanje::OdgovoriPitanja();
+	}
+
+	virtual double brojBodovaStudenta() {
+		if (strcmp(_tacanOdgovor, _odgovorStudenta) == 0)
+			return _bodovi;
+		return 0;
+
+	}
+	//Dodati ostale potrebne funkcije za rad sa klasom
+	virtual void Info() {
+		MCMAPitanje::Info();
+		EsejskoPitanje::Info();
+	}
+};
+
+class Test {
+	char _brojIndeksa[10]; //broj indeksa studenta za kojeg je formiran test
+	Pitanje* _pitanja[30]; // test studenta sadrzi najvise 30 pitanja razlicitog tipa
+	double _maksimalnoBodova;
+	double _osvojenoBodova;
+	double _rezultat; //izrazen u procentima
+	int _ocjena;
+public:
+	//Omoguciti formiranje testa sa razlicitim tipom pitanja,
+	//te dodati funkcije za unos, provjeru tacnih odgovora i ocjenu studenta.
+	//Po potrebi dopuniti i prethodne klase novim atributima/funkcijama.
+
+	Test(const char* brojIndeksa, double maksimalnoBodova) :_maksimalnoBodova(maksimalnoBodova), _osvojenoBodova(0),
+		_rezultat(0), _ocjena(0) {
+		strcpy_s(_brojIndeksa, brojIndeksa);
+		for (int i = 0; i < 30; i++)
+			_pitanja[i] = nullptr;
+	}
+
+	bool DodajPitanje(Pitanje* pitanje) {
+		for (int i = 0; i < 30; i++) {
+			if (_pitanja[i] == nullptr) {
+				_pitanja[i] = pitanje;
+				//		_maksimalnoBodova += pitanje->getBodovi();
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void Info() {
+		cout << _brojIndeksa << endl;
+		for (int i = 0; i < 30; i++)
+			if (_pitanja[i] != nullptr)
+				_pitanja[i]->Info();
+
+		cout << "Maksimalno bodova: " << _maksimalnoBodova << endl;
+		cout << "Rezultat: " << _rezultat << "%" << endl;
+		cout << "Ocjena: " << _ocjena << endl;
+		cout << "Osvojeno bodova: " << _osvojenoBodova << endl;
+	}
+
+	void PokreniTest() {
+		int brojac = 0;
+		for (int i = 0; i < 30; i++) {
+			if (_pitanja[i] == nullptr)
+				break;
+
+			_pitanja[i]->OdgovoriPitanja();
+			_osvojenoBodova += _pitanja[i]->brojBodovaStudenta();
+			brojac++;
+		}
+		_rezultat = (double(_osvojenoBodova) / _maksimalnoBodova) * 100;
+		_ocjena = (_rezultat + 0.5) / 10.0;
+		if (_ocjena < 5)
+			_ocjena = 5;
+
+	}
+
+};
+
+int main()
+{
+	//Testirati sve implementirane funkcionalnosti programa. 
+	//Kreirati najmanje jedan test sa 10 pitanja.
+	Pitanje* esejsko = new EsejskoPitanje("Service Level Agreement", 1, "Sta oznacava skracenica SLA?", "SMA", 3, "Service Level Agreement");
+	EsejskoPitanje* temp = dynamic_cast<EsejskoPitanje*>(esejsko);
+	if (temp != nullptr) {
+		temp->Info();
+	}
+	temp->IzmjeniPodatkeOPitanju("Opce", "Glavni grad BiH?", 3);
+	temp->setTacanOdgovor("Sarajevo");
+	temp->setOdgovorStudenta("Sarajevo");
+	temp->Info();
+
+	Pitanje *MCMApitanje = new MCMAPitanje(1, "Gradovi Hrvatske", "Opce", 3, 3);
+	MCMAPitanje* tempMCMA = dynamic_cast<MCMAPitanje*>(MCMApitanje);
+	if (tempMCMA != nullptr) {
+		tempMCMA->DodajPonudenOdgovor("Zagreb", true);
+		tempMCMA->DodajPonudenOdgovor("Velika Gorica", true);
+		tempMCMA->DodajPonudenOdgovor("London", false);
+	}
+	tempMCMA->Info();
+
+	tempMCMA->OdgovoriPitanja();
+	try {
+		cout << "Bodovi: " << tempMCMA->brojBodovaStudenta() << "%" << endl;
+	}
+	catch (exception& err) {
+		cout << err.what() << endl;
+	}
+	tempMCMA->UkloniOdgovor(2);
+	cout << "London uklonjen " << endl;
+	cout << "Infooo: " << endl;
+	tempMCMA->Info();
+
+	cout << "-------------------------------\n";
+
+	Pitanje* MCSAtemp = new MCSAPitanje(2, "Gradovi BiH: ", "Opce", 3, 3);
+	MCSAPitanje* tempMCSA = dynamic_cast<MCSAPitanje*>(MCSAtemp);
+	if (tempMCSA != nullptr) {
+		tempMCSA->DodajPonudenOdgovor("Zenica", true);
+		tempMCSA->DodajPonudenOdgovor("Beograd", false);
+		tempMCSA->DodajPonudenOdgovor("Skoplje", false);
+	}
+	tempMCSA->OdgovoriPitanja();
+	try {
+		cout << "Broj bodova: " << tempMCSA->brojBodovaStudenta() << "%" << endl;
+	}
+	catch (exception& err) {
+		cout << err.what() << endl;
+	}
+
+	tempMCSA->UkloniOdgovor(2);
+	cout << "Skoplje uklonjeno: " << endl;
+
+	tempMCSA->Info();
+
+	Pojam pojam(true, "Tacka je pojam koji se ne definise", 3, 3, "Sta je tacka?", "Matematika", 5);
+	pojam.OdgovoriPitanja();
+	cout << "Broj bodova studenta: " << pojam.brojBodovaStudenta() << endl;
+
+	cout << "\nTEST POCINJE: \n";
+	Test test("IB170033", 9);
+	test.DodajPitanje(temp);
+	test.DodajPitanje(tempMCMA);
+	test.DodajPitanje(tempMCSA);
+	test.PokreniTest();
+	test.Info();
+
+	system("PAUSE>0");
+	return 0;
+}
+
+
