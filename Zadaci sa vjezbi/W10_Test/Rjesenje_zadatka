@@ -241,9 +241,15 @@ public:
 		_oznaceniOdgovoriStudenta = nullptr; _brojac = 0; _validnoPitanje = false;
 	}
 	~MCMAPitanje() {
-		delete[]_oznaceniOdgovoriStudenta; _oznaceniOdgovoriStudenta = nullptr;
+		if (_oznaceniOdgovoriStudenta != nullptr) {
+			delete[]_oznaceniOdgovoriStudenta; _oznaceniOdgovoriStudenta = nullptr;
+		}
+		
 		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
-			delete[] _odgovori.GetElement1(i);
+			if (_odgovori.GetElement1(i) != nullptr) {
+				delete[] _odgovori.GetElement1(i);
+				_odgovori.GetElement1(i) = nullptr;
+			}
 		}
 	}
 
@@ -336,7 +342,7 @@ public:
 		}
 		if (brojacNetacnihStudenta > 0)
 			return 0;
-		return _bodovi* (double(brojacTacnihStudenta) / brojacTacnih);
+		return _bodovi * (double(brojacTacnihStudenta) / brojacTacnih);
 	}
 
 
@@ -393,7 +399,10 @@ public:
 	~MCSAPitanje() {
 		for (int i = 0; i < _odgovori.GetTrenutno(); i++) {
 			delete[] _odgovori.GetElement1(i);
+			_odgovori.GetElement1(i) = nullptr;
 		}
+		delete _oznaceniOdgovoriStudenta;
+		_oznaceniOdgovoriStudenta = nullptr;
 	}
 
 	virtual void OdgovoriPitanja() {
@@ -411,10 +420,10 @@ public:
 	}
 
 	virtual double brojBodovaStudenta() {
-		
+
 		if (_odgovori.GetElement2(*_oznaceniOdgovoriStudenta))
 			return _bodovi;
-		
+
 		return 0;
 	}
 
@@ -441,9 +450,9 @@ public:
 		if (brojac == 1 && tacan)
 			return false;
 
-		if (tacan) 
+		if (tacan)
 			_validnoPitanje = true;
-			
+
 		_odgovori.Add(AlocirajNizKaraktera(odgovor), tacan);
 		return true;
 	}
@@ -534,10 +543,10 @@ public:
 			if (_pitanja[i] != nullptr)
 				_pitanja[i]->Info();
 
-		cout << "Maksimalno bodova: " << _maksimalnoBodova << endl;
+		cout << "\nMaksimalno bodova: " << _maksimalnoBodova << endl;
+		cout << "Osvojeno bodova: " << _osvojenoBodova << endl;
 		cout << "Rezultat: " << _rezultat << "%" << endl;
 		cout << "Ocjena: " << _ocjena << endl;
-		cout << "Osvojeno bodova: " << _osvojenoBodova << endl;
 	}
 
 	void PokreniTest() {
@@ -627,8 +636,10 @@ int main()
 	test.PokreniTest();
 	test.Info();
 
+	delete esejsko; esejsko = nullptr;
+	delete MCMApitanje; MCMApitanje = nullptr;
+	delete MCSAtemp; MCSAtemp = nullptr;
+
 	system("PAUSE>0");
 	return 0;
 }
-
-
