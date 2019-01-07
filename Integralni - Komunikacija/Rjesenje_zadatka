@@ -21,11 +21,6 @@ class Kolekcija {
 	int * _trenutno;
 public:
 
-	//Kolekcija & operator=(const Kolekcija& k) {
-	//	if (this != &k) {
-	//		
-	//	}
-	//}
 
 	Kolekcija<T1, T2> operator[](const int& i) {
 		if (i < 0 || i >= *_trenutno)
@@ -33,12 +28,6 @@ public:
 
 		return Kolekcija<T1, T2>(_elementi1[i], _elementi2[i]);
 	}
-
-	//T1& operator[](const int& i) {
-	//	if (i < 0 || i >= *_trenutno)
-	//		throw exception("Nema elementa na toj lokaciji", __LINE__);
-	//	return _elementi1[i];
-	//}
 
 
 	Kolekcija(T1& el1, T2& el2) {
