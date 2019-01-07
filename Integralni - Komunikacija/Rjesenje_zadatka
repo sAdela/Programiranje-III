@@ -335,6 +335,7 @@ public:
 				}
 			}
 		}
+		if (prosjek!=0){
 		prosjek /= brojac;
 		if (prosjek <= 5)
 			k->getOcjena() = 5;
@@ -346,8 +347,10 @@ public:
 			k->getOcjena() = 2;
 		else
 			k->getOcjena() = 1;
-
-		cout << endl << k->getOcjena() << " je ocjena komunikacije " << endl;
+		}
+		if (k->getOcjena() != -1)
+			cout << endl << k->getOcjena() << " je ocjena komunikacije " << endl;
+		else cout << "Komunikacija nije postojala"<<endl;
 	}
 
 	int PrikaziKomunikacijuSaKorisnikom(string username) {
