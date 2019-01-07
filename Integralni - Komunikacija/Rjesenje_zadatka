@@ -450,6 +450,12 @@ void PosaljiPoruku(Korisnik** korisnici, int max, string naslov, string korisnik
 	//u slucaju da posiljalac ili primalac ne postoje funkcija treba baciti izuzetak
 	//sa odgovarajucom porukom. takodjer, koristeci regex sve poruke koje sadrze neku od zabranjenih rijeci trebaju biti oznacene kao
 	//*/
+
+	for (int i = 0; i < nedozvoljeneRijeci.size(); i++) {
+		if (strstr(poruka.c_str(), nedozvoljeneRijeci[i].c_str()) != nullptr)
+			return;
+	}
+
 	bool flag = false;
 	Poruka pravaPoruka(korisnikA, korisnikB, poruka, datum);
 	for (int i = 0; i < max; i++) {
