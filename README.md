@@ -1,3 +1,3 @@
 # Programiranje-III
-*Objektno-orijentisano programiranje*
+Objektno-orijentisano programiranje
 Urađeni zadaci iz predmeta Programiranje III
